@@ -13,6 +13,8 @@ struct CallingView: View {
     @Environment(\.horizontalSizeClass) var widthSizeClass: UserInterfaceSizeClass?
     @Environment(\.verticalSizeClass) var heightSizeClass: UserInterfaceSizeClass?
 
+    @State private var pipLocation = CGPoint(x: 50, y: 50)
+
     var safeAreaIgnoreArea: Edge.Set {
         return getSizeClass() != .iphoneLandscapeScreenSize ? []: [.bottom]
     }
@@ -75,6 +77,16 @@ struct CallingView: View {
         let frameWidth: CGFloat = isPortraitMode ? 72 : 104
         let frameHeight: CGFloat = isPortraitMode ? 104 : 72
 
+        var simpleDrag: some Gesture {
+            DragGesture()
+                .onChanged { value in
+                    pipLocation = value.location
+                    print("Location: \(pipLocation)")
+                    // Check Bounds
+                    // Limit Position if Needed
+                }
+        }
+
         return Group {
             LocalVideoView(viewModel: viewModel.localVideoViewModel,
                            viewManager: viewManager,
@@ -83,6 +95,8 @@ struct CallingView: View {
                 .background(Color(StyleProvider.color.backgroundColor))
                 .clipShape(RoundedRectangle(cornerRadius: shapeCornerRadius))
                 .padding()
+                .position(pipLocation)
+                .gesture(simpleDrag)
         }
     }
 
