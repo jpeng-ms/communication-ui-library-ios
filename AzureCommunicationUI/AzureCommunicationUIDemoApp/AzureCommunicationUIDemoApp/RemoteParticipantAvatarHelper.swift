@@ -27,7 +27,7 @@ struct RemoteParticipantAvatarHelper {
         let avatars = ["cat", "fox", "koala", "monkey", "mouse", "octopus"]
         for identifier in identifiers {
             let id = getRemoteParticipantId(identifier)
-            let nameIdValue = id != nil ? " \(id?.suffix(4) ?? "")" : ""
+            let nameIdValue = id != nil ? "\(id?.suffix(4) ?? "")" : ""
             var avatarImage: UIImage?
             var selectedAvatarName = ""
             if let lastSymbol = id?.last,
@@ -37,8 +37,23 @@ struct RemoteParticipantAvatarHelper {
                 avatarImage = UIImage(named: selectedAvatarName)
             }
             let participantViewData = ParticipantViewData(avatar: avatarImage,
-                                          renderDisplayName: selectedAvatarName + nameIdValue)
-            callComposite.setRemoteParticipantViewData(for: identifier, participantViewData: participantViewData)
+                                                          renderDisplayName: selectedAvatarName + " " + nameIdValue)
+            //            callComposite.setRemoteParticipantViewData(for: identifier,
+            //                                                       participantViewData: participantViewData)
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                print("!!!!!! Dispatch 1")
+                callComposite.setRemoteParticipantViewData(for: identifier,
+                                                           participantViewData: participantViewData)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                    print("!!!!!! Dispatch 2")
+                    let participantViewData =
+                    ParticipantViewData(avatar: avatarImage,
+                                renderDisplayName: nameIdValue + " " + selectedAvatarName + " " + nameIdValue)
+                    callComposite.setRemoteParticipantViewData(for: identifier,
+                                                               participantViewData: participantViewData)
+                }
+            }
         }
     }
 }

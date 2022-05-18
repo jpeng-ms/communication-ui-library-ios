@@ -17,7 +17,12 @@ struct InfoHeaderView: View {
     let hStackHorizontalPadding: CGFloat = 20.0
 
     var body: some View {
-        ZStack {
+        if #available(iOS 15.0, *) {
+            print("!!!!")
+            print(Self._printChanges())
+            print("!!!!")
+        }
+        return ZStack {
             if viewModel.isInfoHeaderDisplayed {
                 infoHeader
             } else {

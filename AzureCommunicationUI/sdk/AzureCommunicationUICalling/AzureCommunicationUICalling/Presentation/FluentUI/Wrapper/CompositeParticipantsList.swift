@@ -5,14 +5,35 @@
 
 import SwiftUI
 import FluentUI
+import Combine
 
 struct CompositeParticipantsList: UIViewControllerRepresentable {
     @Binding var isPresented: Bool
     @Binding var isInfoHeaderDisplayed: Bool
     @Binding var isVoiceOverEnabled: Bool
+    @State var updatedId: String = ""
     @ObservedObject var viewModel: ParticipantsListViewModel
-    @ObservedObject var avatarViewManager: AvatarViewManager
+    let avatarViewManager: AvatarViewManager
     let sourceView: UIView
+    private var cancellables = Set<AnyCancellable>()
+
+    init(isPresented: Binding<Bool>,
+         isInfoHeaderDisplayed: Binding<Bool>,
+         isVoiceOverEnabled: Binding<Bool>,
+         viewModel: ParticipantsListViewModel,
+         avatarViewManager: AvatarViewManager,
+         sourceView: UIView) {
+        self._isPresented = isPresented
+        self._isInfoHeaderDisplayed = isInfoHeaderDisplayed
+        self._isVoiceOverEnabled = isVoiceOverEnabled
+        self.viewModel = viewModel
+        self.avatarViewManager = avatarViewManager
+        self.sourceView = sourceView
+        avatarViewManager.updatedParticipantIdSubject
+            .sink {
+                self.updatedId = $0
+            }.store(in: &cancellables)
+    }
 
     func makeCoordinator() -> Coordinator {
         Coordinator(isPresented: $isPresented,

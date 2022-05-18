@@ -56,7 +56,7 @@ struct ParticipantGridCellView: View {
         .onReceive(viewModel.$participantIdentifier) {
             updateParticipantViewData(for: $0)
         }
-        .onReceive(avatarViewManager.$updatedId) {
+        .onReceive(avatarViewManager.updatedParticipantIdSubject) {
             guard $0 == viewModel.participantIdentifier else {
                 return
             }

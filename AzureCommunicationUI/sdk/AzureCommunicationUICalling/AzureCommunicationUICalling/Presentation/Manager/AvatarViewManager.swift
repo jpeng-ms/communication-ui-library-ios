@@ -12,9 +12,10 @@ protocol AvatarViewManagerProtocol {
                                       participantViewData: ParticipantViewData) -> Result<Void, Error>
 }
 
-class AvatarViewManager: AvatarViewManagerProtocol, ObservableObject {
-    @Published var updatedId: String?
+class AvatarViewManager: AvatarViewManagerProtocol {
+//    @Published var updatedId: String?
     @Published private(set) var localSettings: LocalSettings?
+    var updatedParticipantIdSubject = PassthroughSubject<String, Never>()
     private let store: Store<AppState>
     private(set) var avatarStorage = MappedSequence<String, ParticipantViewData>()
     var cancellables = Set<AnyCancellable>()
@@ -60,7 +61,8 @@ class AvatarViewManager: AvatarViewManagerProtocol, ObservableObject {
         }
         avatarStorage.append(forKey: idStringValue,
                              value: participantViewData)
-        updatedId = idStringValue
+//        updatedId = idStringValue
+        updatedParticipantIdSubject.send(idStringValue)
         return .success(Void())
     }
 }
