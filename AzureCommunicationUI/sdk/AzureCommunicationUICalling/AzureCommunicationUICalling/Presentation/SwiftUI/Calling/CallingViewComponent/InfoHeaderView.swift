@@ -8,6 +8,7 @@ import FluentUI
 
 struct InfoHeaderView: View {
     @ObservedObject var viewModel: InfoHeaderViewModel
+//    @State var updId: String?
 
     let avatarViewManager: AvatarViewManager
     let participantsListButtonSourceView = UIView()
@@ -70,9 +71,14 @@ struct InfoHeaderView: View {
         CompositeParticipantsList(isPresented: $viewModel.isParticipantsListDisplayed,
                                   isInfoHeaderDisplayed: $viewModel.isInfoHeaderDisplayed,
                                   isVoiceOverEnabled: $viewModel.isVoiceOverEnabled,
+//                                  updId: $updId,
                                   viewModel: viewModel.participantsListViewModel,
                                   avatarViewManager: avatarViewManager,
                                   sourceView: participantsListButtonSourceView)
             .modifier(LockPhoneOrientation())
+//            .onReceive(avatarViewManager.updatedParticipantIdSubject) {
+//                print("!! here")
+//                updId = $0
+//            }
     }
 }

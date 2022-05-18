@@ -12,6 +12,7 @@ struct CompositeParticipantsList: UIViewControllerRepresentable {
     @Binding var isInfoHeaderDisplayed: Bool
     @Binding var isVoiceOverEnabled: Bool
     @State var updatedId: String = ""
+//    @Binding var updId: String?
     @ObservedObject var viewModel: ParticipantsListViewModel
     let avatarViewManager: AvatarViewManager
     let sourceView: UIView
@@ -20,9 +21,11 @@ struct CompositeParticipantsList: UIViewControllerRepresentable {
     init(isPresented: Binding<Bool>,
          isInfoHeaderDisplayed: Binding<Bool>,
          isVoiceOverEnabled: Binding<Bool>,
+//         updId: Binding<String?>,
          viewModel: ParticipantsListViewModel,
          avatarViewManager: AvatarViewManager,
          sourceView: UIView) {
+//        self._updId = updId
         self._isPresented = isPresented
         self._isInfoHeaderDisplayed = isInfoHeaderDisplayed
         self._isVoiceOverEnabled = isVoiceOverEnabled
