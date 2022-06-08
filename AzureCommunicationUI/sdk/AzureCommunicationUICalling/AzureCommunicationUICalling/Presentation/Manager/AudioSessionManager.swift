@@ -5,21 +5,44 @@
 
 import AVFoundation
 import Combine
+import CoreBluetooth
 
 protocol AudioSessionManagerProtocol {
 
 }
 
-class AudioSessionManager: AudioSessionManagerProtocol {
-    private let logger: Logger
-    private let store: Store<AppState>
+class AudioSessionManager: NSObject, AudioSessionManagerProtocol, CBCentralManagerDelegate, CBPeripheralDelegate {
+    func centralManagerDidUpdateState(_ central: CBCentralManager) {
+        if central.state == .poweredOn {
+            print("hay! Searching for BLE Devices")
+            // Scan for peripherals if BLE is turned on
+        } else {
+            // Can have different conditions for all states if needed
+            // - print generic message for now, i.e. Bluetooth isn't On
+            print("hay! Bluetooth switched off or not initialized")
+            handle(state: self.localUserAudioDeviceState!)
+        }
+    }
+
+    func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
+        print("hay! \(peripheral.name ?? "nil") is disconnected")
+    }
+
+    func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
+        print("hay! connected to \(peripheral.name ?? "nil")")
+    }
+
+    private var logger: Logger!
+    private var store: Store<AppState>!
     private var localUserAudioDeviceState: LocalUserState.AudioDeviceSelectionStatus?
     private var audioSessionState: AudioSessionStatus = .active
     private var audioSessionDetector: Timer?
     var cancellables = Set<AnyCancellable>()
+    private var bluetoothManager: CBCentralManager!
 
     init(store: Store<AppState>,
          logger: Logger) {
+        super.init()
         self.store = store
         self.logger = logger
         let currentAudioDevice = getCurrentAudioDevice()
@@ -29,6 +52,7 @@ class AudioSessionManager: AudioSessionManagerProtocol {
             .sink { [weak self] state in
                 self?.receive(state: state)
             }.store(in: &cancellables)
+        bluetoothManager = CBCentralManager(delegate: self, queue: nil)
     }
 
     private func receive(state: AppState) {
@@ -91,6 +115,7 @@ class AudioSessionManager: AudioSessionManagerProtocol {
     }
 
     @objc func handleRouteChange(notification: Notification) {
+        debugPrint("hay! handleRouteChange: \(notification.name)")
         let currentDevice = getCurrentAudioDevice()
         guard !hasProcess(currentDevice) else {
             return
@@ -119,15 +144,20 @@ class AudioSessionManager: AudioSessionManagerProtocol {
         if let output = audioSession.currentRoute.outputs.first {
             switch output.portType {
             case .bluetoothA2DP, .bluetoothLE, .bluetoothHFP:
+                debugPrint("hay! getCurrentAudioDevice: bluetooth")
                 return .bluetooth
             case .headphones, .headsetMic:
+                debugPrint("hay! getCurrentAudioDevice: headphones/headsetMic")
                 return .headphones
             case .builtInSpeaker:
+                debugPrint("hay! getCurrentAudioDevice: builtInSpeaker")
                 return .speaker
             default:
+                debugPrint("hay! getCurrentAudioDevice: default receiver")
                 return .receiver
             }
         }
+        debugPrint("hay! getCurrentAudioDevice: receiver")
         return .receiver
     }
 

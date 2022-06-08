@@ -42,6 +42,8 @@
 	<array>
 		<string>audio</string>
 	</array>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>App needs to monitor Bluetooth status to update bluetooth audio device info in a call</string>
 	<key>appCenterSecret</key>
 	<string>${appCenterSecret}</string>
 	<key>acsToken</key>
