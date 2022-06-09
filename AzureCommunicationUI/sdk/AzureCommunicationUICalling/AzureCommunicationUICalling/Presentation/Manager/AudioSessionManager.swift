@@ -11,26 +11,54 @@ protocol AudioSessionManagerProtocol {
 
 }
 
-class AudioSessionManager: NSObject, AudioSessionManagerProtocol, CBCentralManagerDelegate, CBPeripheralDelegate {
+class CentralManager: NSObject {
+    static let shared: CentralManager = {
+        return CentralManager()
+    }()
+
+    private var centralManager: CBCentralManager!
+    var peripherals: [CBPeripheral] = []
+
+    override init() {
+        super.init()
+        centralManager = CBCentralManager(delegate: self, queue: DispatchQueue.main)
+    }
+}
+
+extension CentralManager: CBCentralManagerDelegate {
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         if central.state == .poweredOn {
-            print("hay! Searching for BLE Devices")
+            print("hay!! Searching for BLE Devices")
             // Scan for peripherals if BLE is turned on
         } else {
             // Can have different conditions for all states if needed
             // - print generic message for now, i.e. Bluetooth isn't On
-            print("hay! Bluetooth switched off or not initialized")
-            handle(state: self.localUserAudioDeviceState!)
+            print("hay!! Bluetooth switched off or not initialized")
+//            handle(state: self.localUserAudioDeviceState!)
         }
     }
 
+    func centralManager( _ central: CBCentralManager,
+                         didDiscover peripheral: CBPeripheral,
+                         advertisementData: [String: Any],
+                         rssi RSSI: NSNumber) {
+        print("hay!! \(peripheral.name ?? "nil") is discovered")
+    }
+
+    func centralManager(central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: NSError?) {
+        print("hay!! \(peripheral.name ?? "nil") iss disconnected")
+    }
+
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-        print("hay! \(peripheral.name ?? "nil") is disconnected")
+        print("hay!! \(peripheral.name ?? "nil") is disconnected")
     }
 
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        print("hay! connected to \(peripheral.name ?? "nil")")
+        print("hay!! connected to \(peripheral.name ?? "nil")")
     }
+}
+
+class AudioSessionManager: NSObject, AudioSessionManagerProtocol {
 
     private var logger: Logger!
     private var store: Store<AppState>!
@@ -38,7 +66,6 @@ class AudioSessionManager: NSObject, AudioSessionManagerProtocol, CBCentralManag
     private var audioSessionState: AudioSessionStatus = .active
     private var audioSessionDetector: Timer?
     var cancellables = Set<AnyCancellable>()
-    private var bluetoothManager: CBCentralManager!
 
     init(store: Store<AppState>,
          logger: Logger) {
@@ -52,7 +79,7 @@ class AudioSessionManager: NSObject, AudioSessionManagerProtocol, CBCentralManag
             .sink { [weak self] state in
                 self?.receive(state: state)
             }.store(in: &cancellables)
-        bluetoothManager = CBCentralManager(delegate: self, queue: nil)
+        let sin = CentralManager.shared
     }
 
     private func receive(state: AppState) {
