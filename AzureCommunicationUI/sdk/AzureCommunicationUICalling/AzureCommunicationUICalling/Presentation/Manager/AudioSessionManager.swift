@@ -11,50 +11,83 @@ protocol AudioSessionManagerProtocol {
 
 }
 
-class CentralManager: NSObject {
-    static let shared: CentralManager = {
-        return CentralManager()
-    }()
+// Bluetooth peripheral information
+struct CBUUIDs {
+    static let kBLEServiceUUID: String = "6e400001-b5a3-f393-e0a9-e50e24dcca9e"
+    static let kBLECharacteristicUuidTx: String = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"
+    static let kBLECharacteristicUuidRx: String = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"
+    static let BLEServiceUUID = CBUUID(string: kBLEServiceUUID)
 
-    private var centralManager: CBCentralManager!
-    var peripherals: [CBPeripheral] = []
-
-    override init() {
-        super.init()
-        centralManager = CBCentralManager(delegate: self, queue: DispatchQueue.main)
-    }
+    // (Property = Write without response)
+    static let BLECharacteristicUuidTx = CBUUID(string: kBLECharacteristicUuidTx)
+    // (Property = Read/Notify)
+    static let BLECharacteristicUuidRx = CBUUID(string: kBLECharacteristicUuidRx)
 }
 
-extension CentralManager: CBCentralManagerDelegate {
+extension AudioSessionManager: CBCentralManagerDelegate, CBPeripheralManagerDelegate, CBPeripheralDelegate {
+    func startScanning() {
+      // Start Scanning
+      centralManager?.scanForPeripherals(withServices: [CBUUIDs.BLEServiceUUID])
+    }
+
+    // MARK: - CBCentralManagerDelegate
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         if central.state == .poweredOn {
-            print("hay!! Searching for BLE Devices")
+            print("test:: Searching for BLE Devices")
             // Scan for peripherals if BLE is turned on
+            startScanning()
         } else {
             // Can have different conditions for all states if needed
             // - print generic message for now, i.e. Bluetooth isn't On
-            print("hay!! Bluetooth switched off or not initialized")
-//            handle(state: self.localUserAudioDeviceState!)
+            print("test:: Bluetooth switched off or not initialized")
+            // for testing purpose only
+//            store.dispatch(action: .localUserAction(.audioDeviceChangeSucceeded(device: getCurrentAudioDevice())))
         }
     }
 
+    // MARK: - CBPeripheralManagerDelegate
+    func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManager) {
+        switch peripheral.state {
+        case .poweredOn:
+            print("test:: Peripheral Is Powered On.")
+        case .unsupported:
+            print("test:: Peripheral Is Unsupported.")
+        case .unauthorized:
+            print("test:: Peripheral Is Unauthorized.")
+        case .unknown:
+            print("test:: Peripheral Unknown")
+        case .resetting:
+            print("test:: Peripheral Resetting")
+        case .poweredOff:
+            print("test:: Peripheral Is Powered Off.")
+        @unknown default:
+            print("test:: Error")
+        }
+    }
+
+    func centralManager(central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: NSError?) {
+        print("test:: \(peripheral.name ?? "nil") iss disconnected")
+    }
+
+    func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
+        print("test:: \(peripheral.name ?? "nil") is disconnected")
+    }
+
+    func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
+        print("test:: connected to \(peripheral.name ?? "nil")")
+    }
+
+    // MARK: - CBPeripheralDelegate
     func centralManager( _ central: CBCentralManager,
                          didDiscover peripheral: CBPeripheral,
                          advertisementData: [String: Any],
                          rssi RSSI: NSNumber) {
-        print("hay!! \(peripheral.name ?? "nil") is discovered")
-    }
-
-    func centralManager(central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: NSError?) {
-        print("hay!! \(peripheral.name ?? "nil") iss disconnected")
-    }
-
-    func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-        print("hay!! \(peripheral.name ?? "nil") is disconnected")
-    }
-
-    func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        print("hay!! connected to \(peripheral.name ?? "nil")")
+        bluefruitPeripheral = peripheral
+        bluefruitPeripheral.delegate = self
+        print("test:: Peripheral Discovered: \(peripheral)")
+        print("test:: Peripheral name: \(peripheral.name)")
+        print("test:: Advertisement Data: \(advertisementData)")
+        centralManager?.stopScan()
     }
 }
 
@@ -66,6 +99,9 @@ class AudioSessionManager: NSObject, AudioSessionManagerProtocol {
     private var audioSessionState: AudioSessionStatus = .active
     private var audioSessionDetector: Timer?
     var cancellables = Set<AnyCancellable>()
+    var centralManager: CBCentralManager!
+    var peripheralManager: CBPeripheralManager!
+    private var bluefruitPeripheral: CBPeripheral!
 
     init(store: Store<AppState>,
          logger: Logger) {
@@ -79,7 +115,8 @@ class AudioSessionManager: NSObject, AudioSessionManagerProtocol {
             .sink { [weak self] state in
                 self?.receive(state: state)
             }.store(in: &cancellables)
-        let sin = CentralManager.shared
+        centralManager = CBCentralManager(delegate: self, queue: DispatchQueue.main)
+        peripheralManager = CBPeripheralManager(delegate: self, queue: DispatchQueue.main)
     }
 
     private func receive(state: AppState) {
@@ -142,7 +179,7 @@ class AudioSessionManager: NSObject, AudioSessionManagerProtocol {
     }
 
     @objc func handleRouteChange(notification: Notification) {
-        debugPrint("hay! handleRouteChange: \(notification.name)")
+        debugPrint("test:: handleRouteChange: \(notification.name)")
         let currentDevice = getCurrentAudioDevice()
         guard !hasProcess(currentDevice) else {
             return
@@ -171,20 +208,20 @@ class AudioSessionManager: NSObject, AudioSessionManagerProtocol {
         if let output = audioSession.currentRoute.outputs.first {
             switch output.portType {
             case .bluetoothA2DP, .bluetoothLE, .bluetoothHFP:
-                debugPrint("hay! getCurrentAudioDevice: bluetooth")
+                debugPrint("test:: getCurrentAudioDevice: bluetooth")
                 return .bluetooth
             case .headphones, .headsetMic:
-                debugPrint("hay! getCurrentAudioDevice: headphones/headsetMic")
+                debugPrint("test:: getCurrentAudioDevice: headphones/headsetMic")
                 return .headphones
             case .builtInSpeaker:
-                debugPrint("hay! getCurrentAudioDevice: builtInSpeaker")
+                debugPrint("test:: getCurrentAudioDevice: builtInSpeaker")
                 return .speaker
             default:
-                debugPrint("hay! getCurrentAudioDevice: default receiver")
+                debugPrint("test:: getCurrentAudioDevice: default receiver")
                 return .receiver
             }
         }
-        debugPrint("hay! getCurrentAudioDevice: receiver")
+        debugPrint("test:: getCurrentAudioDevice: receiver")
         return .receiver
     }
 
