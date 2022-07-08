@@ -114,6 +114,7 @@ class SetupControlBarViewModel: ObservableObject {
 
     func selectAudioDeviceButtonTapped() {
         isAudioDeviceSelectionDisplayed = true
+        audioDevicesListViewModel.updateList() // spike: audio update
     }
 
     func isCameraDisabled() -> Bool {
@@ -147,7 +148,7 @@ class SetupControlBarViewModel: ObservableObject {
             updateButtonTypeColor(isLocalVideoOff: localVideoStreamId == nil)
         }
 
-        audioDevicesListViewModel.update(audioDeviceStatus: localUserState.audioState.device)
+        audioDevicesListViewModel.update(audioDeviceStatus: localUserState.audioState.device) // update audio
     }
 
     func update(isJoinRequested: Bool) {

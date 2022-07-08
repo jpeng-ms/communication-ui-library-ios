@@ -33,6 +33,10 @@ class AudioDevicesListViewModel: ObservableObject {
         }
     }
 
+    func updateList() {
+        self.audioDevicesList = getAvailableAudioDevices(audioDeviceStatus: audioDeviceStatus)
+    }
+
     private func getAvailableAudioDevices(audioDeviceStatus: LocalUserState.AudioDeviceSelectionStatus)
     -> [AudioDevicesListCellViewModel] {
         let systemDefaultAudio: AudioDeviceType
