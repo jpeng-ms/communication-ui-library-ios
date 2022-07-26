@@ -3,7 +3,7 @@ platform :ios, '14.0'
 workspace 'AzureCommunicationUI'
 
 project 'sdk/AzureCommunicationUICalling/AzureCommunicationUICalling.xcodeproj'
-project 'AzureCommunicationUIDemoApp/AzureCommunicationUIDemoApp.xcodeproj'
+project 'AzureCommunicationUIDemoApp/AzureCommunicationUIDemoApp.xcodeproj', 'XCUITest' => :debug
 
 target 'AzureCommunicationUICalling' do
   project 'sdk/AzureCommunicationUICalling/AzureCommunicationUICalling.xcodeproj'
