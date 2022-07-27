@@ -36,43 +36,41 @@ class CallingMiddlewareHandler: CallingMiddlewareHandling {
     }
 
     func setupCall(state: AppState, dispatch: @escaping ActionDispatch) {
-        callingService.setupCall()
-            .sink(receiveCompletion: { [weak self] completion in
-                guard let self = self else {
-                    return
-                }
-                switch completion {
-                case .failure(let error):
-                    self.handle(error: error, errorType: .callJoinFailed, dispatch: dispatch)
-                case .finished:
-                    break
-                }
-            }, receiveValue: {
+        Task.init {
+            do {
+                try await self.callingService.setupCall()
                 if state.permissionState.cameraPermission == .granted,
                    state.localUserState.cameraState.operation == .off,
                    state.errorState.internalError == nil {
                     dispatch(.localUserAction(.cameraPreviewOnTriggered))
                 }
-            })
-            .store(in: cancelBag)
+            } catch {
+                self.handle(error: error, errorType: .callJoinFailed, dispatch: dispatch)
+            }
+        }
     }
 
     func startCall(state: AppState, dispatch: @escaping ActionDispatch) {
-        callingService.startCall(isCameraPreferred: state.localUserState.cameraState.operation == .on,
-                                 isAudioPreferred: state.localUserState.audioState.operation == .on)
-        .sink(receiveCompletion: { [weak self] completion in
-            guard let self = self else {
-                return
+        Task.init {
+            do {
+                try await callingService.startCall(
+                    isCameraPreferred: state.localUserState.cameraState.operation == .on,
+                    isAudioPreferred: state.localUserState.audioState.operation == .on)
+                .sink(receiveCompletion: { [weak self] completion in
+                    guard let self = self else {
+                        return
+                    }
+                    switch completion {
+                    case .failure(let error):
+                        self.handle(error: error, errorType: .callJoinFailed, dispatch: dispatch)
+                    case .finished:
+                        break
+                    }
+                }, receiveValue: { _ in
+                    self.subscription(dispatch: dispatch)
+                }).store(in: cancelBag)
             }
-            switch completion {
-            case .failure(let error):
-                self.handle(error: error, errorType: .callJoinFailed, dispatch: dispatch)
-            case .finished:
-                break
-            }
-        }, receiveValue: { _ in
-            self.subscription(dispatch: dispatch)
-        }).store(in: cancelBag)
+        }
     }
 
     func endCall(state: AppState, dispatch: @escaping ActionDispatch) {

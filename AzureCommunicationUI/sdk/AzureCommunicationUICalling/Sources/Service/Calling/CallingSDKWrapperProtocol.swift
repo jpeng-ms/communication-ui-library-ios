@@ -16,8 +16,9 @@ protocol CallingSDKWrapperProtocol {
     func getRemoteParticipant(_ identifier: String) -> RemoteParticipant?
     func startPreviewVideoStream() -> AnyPublisher<String, Error>
     func getLocalVideoStream(_ identifier: String) -> LocalVideoStream?
-    func setupCall() -> AnyPublisher<Void, Error>
-    func startCall(isCameraPreferred: Bool, isAudioPreferred: Bool) -> AnyPublisher<Void, Error>
+    func getCallAgent() async throws -> CallAgent
+    func setupCall() async throws
+    func startCall(isCameraPreferred: Bool, isAudioPreferred: Bool) async throws -> AnyPublisher<Void, Error>
     func endCall() -> AnyPublisher<Void, Error>
     func startCallLocalVideoStream() -> AnyPublisher<String, Error>
     func stopLocalVideoStream() -> AnyPublisher<Void, Error>

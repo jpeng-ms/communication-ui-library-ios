@@ -13,8 +13,8 @@ protocol CallingServiceProtocol {
     var isTranscriptionActiveSubject: PassthroughSubject<Bool, Never> { get }
     var isLocalUserMutedSubject: PassthroughSubject<Bool, Never> { get }
 
-    func setupCall() -> AnyPublisher<Void, Error>
-    func startCall(isCameraPreferred: Bool, isAudioPreferred: Bool) -> AnyPublisher<Void, Error>
+    func setupCall() async throws
+    func startCall(isCameraPreferred: Bool, isAudioPreferred: Bool) async throws -> AnyPublisher<Void, Error>
     func endCall() -> AnyPublisher<Void, Error>
 
     func requestCameraPreviewOn() -> AnyPublisher<String, Error>
@@ -53,12 +53,12 @@ class CallingService: NSObject, CallingServiceProtocol {
         callInfoSubject = callingSDKWrapper.callingEventsHandler.callInfoSubject
     }
 
-    func setupCall() -> AnyPublisher<Void, Error> {
-        return callingSDKWrapper.setupCall()
+    func setupCall() async throws {
+        try await callingSDKWrapper.setupCall()
     }
 
-    func startCall(isCameraPreferred: Bool, isAudioPreferred: Bool) -> AnyPublisher<Void, Error> {
-        return callingSDKWrapper.startCall(
+    func startCall(isCameraPreferred: Bool, isAudioPreferred: Bool) async throws -> AnyPublisher<Void, Error> {
+        return try await callingSDKWrapper.startCall(
             isCameraPreferred: isCameraPreferred,
             isAudioPreferred: isAudioPreferred)
     }

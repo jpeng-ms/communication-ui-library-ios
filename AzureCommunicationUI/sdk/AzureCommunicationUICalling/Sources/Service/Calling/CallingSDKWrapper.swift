@@ -33,23 +33,38 @@ class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
         logger.debug("CallingSDKWrapper deallocated")
     }
 
-    func setupCall() -> AnyPublisher<Void, Error> {
-        setupCallClientAndDeviceManager().eraseToAnyPublisher()
+    func getCallAgent() async throws -> CallAgent {
+        do {
+            try await setupCallAgent()
+            guard let callAgent = callAgent else {
+                throw CallCompositeInternalError.callAgentFailed
+            }
+            return callAgent
+        } catch {
+            throw error
+        }
     }
 
-    func startCall(isCameraPreferred: Bool, isAudioPreferred: Bool) -> AnyPublisher<Void, Error> {
+    func setupCall() async throws {
+        do {
+            try await setupCallClientAndDeviceManager()
+        } catch {
+            throw error
+        }
+    }
+
+    func startCall(isCameraPreferred: Bool, isAudioPreferred: Bool) async throws -> AnyPublisher<Void, Error> {
         logger.debug("Reset Subjects in callingEventsHandler")
         callingEventsHandler.setupProperties()
         self.logger.debug( "Starting call")
-        return setupCallAgent()
-            .flatMap { [weak self] _ -> AnyPublisher<Void, Error> in
-                guard let self = self else {
-                    let error = CallCompositeInternalError.callJoinFailed
-                    return Fail(error: error).eraseToAnyPublisher()
-                }
-                return self.joinCall(isCameraPreferred: isCameraPreferred,
-                                     isAudioPreferred: isAudioPreferred).eraseToAnyPublisher()
-            }.eraseToAnyPublisher()
+        do {
+            try await setupCallAgent()
+            return self.joinCall(isCameraPreferred: isCameraPreferred,
+                                 isAudioPreferred: isAudioPreferred).eraseToAnyPublisher()
+        } catch {
+            let error = CallCompositeInternalError.callJoinFailed
+            throw error
+        }
     }
 
     func joinCall(isCameraPreferred: Bool, isAudioPreferred: Bool) -> Future<Void, Error> {
@@ -243,50 +258,31 @@ class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
 }
 
 extension CallingSDKWrapper {
-    private func setupCallClientAndDeviceManager() -> Future<Void, Error> {
-        Future { promise in
-            self.callClient = self.makeCallClient()
-            self.callClient!.getDeviceManager(completionHandler: { [weak self] (deviceManager, error) in
-                guard let self = self else {
-                    return
-                }
-                if let error = error {
-                    self.logger.error("Failed to get device manager instance")
-                    return promise(.failure(error))
-                }
-                self.deviceManager = deviceManager
-                self.deviceManager?.delegate = self
-                return promise(.success(()))
-            })
+    private func setupCallClientAndDeviceManager() async throws {
+        self.callClient = self.makeCallClient()
+        do {
+            self.deviceManager = try await self.callClient!.getDeviceManager()
+            self.deviceManager?.delegate = self
+        } catch {
+            throw error
         }
     }
 
-    private func setupCallAgent() -> Future<Void, Error> {
-        Future { promise in
-            guard self.callAgent == nil else {
-                self.logger.debug( "Reusing call agent")
-                return promise(.success(()))
-            }
-            let options = CallAgentOptions()
-            if let displayName = self.callConfiguration.displayName {
-                options.displayName = displayName
-            }
-
-            self.callClient?.createCallAgent(userCredential: self.callConfiguration.credential,
-                                             options: options) { [weak self] (agent, error) in
-                guard let self = self else {
-                    return promise(.failure(CallCompositeInternalError.callJoinFailed))
-                }
-
-                if let error = error {
-                    self.logger.error( "It was not possible to create a call agent.")
-                    return promise(.failure(error))
-                }
-
-                self.logger.debug("Call agent successfully created.")
-                self.callAgent = agent
-                return promise(.success(()))
-            }
+    private func setupCallAgent() async throws {
+        guard self.callAgent == nil else {
+            self.logger.debug( "Reusing call agent")
+            return
+        }
+        let options = CallAgentOptions()
+        if let displayName = self.callConfiguration.displayName {
+            options.displayName = displayName
+        }
+        do {
+            self.callAgent = try await self.callClient?.createCallAgent(
+                userCredential: self.callConfiguration.credential,
+                options: options)
+        } catch {
+            throw error
         }
     }
 

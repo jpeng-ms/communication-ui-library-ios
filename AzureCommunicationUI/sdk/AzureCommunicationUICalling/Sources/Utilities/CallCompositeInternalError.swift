@@ -7,6 +7,7 @@ import Foundation
 
 enum CallCompositeInternalError: String, Error, Equatable {
     case callTokenFailed
+    case callAgentFailed
     case callJoinFailed
     case callEndFailed
     case callHoldFailed
@@ -20,6 +21,8 @@ enum CallCompositeInternalError: String, Error, Equatable {
         switch self {
         case .callTokenFailed:
             return CallCompositeErrorCode.tokenExpired
+        case .callAgentFailed:
+            return ""
         case .callJoinFailed:
             return CallCompositeErrorCode.callJoin
         case .callEndFailed:
@@ -37,6 +40,7 @@ enum CallCompositeInternalError: String, Error, Equatable {
     func isFatalError() -> Bool {
         switch self {
         case .callTokenFailed,
+                .callAgentFailed,
                 .callJoinFailed,
                 .callEndFailed:
             return true
