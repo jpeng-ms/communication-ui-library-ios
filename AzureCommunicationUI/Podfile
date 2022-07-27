@@ -2,11 +2,11 @@ platform :ios, '14.0'
 
 workspace 'AzureCommunicationUI'
 
-project 'sdk/AzureCommunicationUICalling/AzureCommunicationUICalling.xcodeproj'
+project 'sdk/AzureCommunicationUICalling/AzureCommunicationUICalling.xcodeproj', 'XCUITest' => :debug
 project 'AzureCommunicationUIDemoApp/AzureCommunicationUIDemoApp.xcodeproj', 'XCUITest' => :debug
 
 target 'AzureCommunicationUICalling' do
-  project 'sdk/AzureCommunicationUICalling/AzureCommunicationUICalling.xcodeproj'
+  project 'sdk/AzureCommunicationUICalling/AzureCommunicationUICalling.xcodeproj', 'XCUITest' => :debug
   use_frameworks!
   pod 'AzureCommunicationCalling', '2.2.0'
   pod 'MicrosoftFluentUI/Avatar_ios', '0.3.9'
@@ -23,7 +23,7 @@ target 'AzureCommunicationUICalling' do
 end
 
 target 'AzureCommunicationUIDemoApp' do
-  project 'AzureCommunicationUIDemoApp/AzureCommunicationUIDemoApp.xcodeproj'
+  project 'AzureCommunicationUIDemoApp/AzureCommunicationUIDemoApp.xcodeproj', 'XCUITest' => :debug
   use_frameworks!
   pod 'AzureCommunicationCalling', '2.2.0'
   pod 'MicrosoftFluentUI/Avatar_ios', '0.3.9'

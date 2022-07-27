@@ -104,10 +104,6 @@ struct SettingsView: View {
             }.pickerStyle(.segmented)
         }
     }
-
-    func updateCallingSDKService() {
-        let wrapper = CallingSDKEventsHandler.shared
-    }
 }
 
 struct LocalePicker: View {

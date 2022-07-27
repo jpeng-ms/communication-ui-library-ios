@@ -14,6 +14,7 @@ class EntryViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        updateCallingSDKService()
     }
 
     init(envConfigSubject: EnvConfigSubject) {
@@ -107,5 +108,12 @@ class EntryViewController: UIViewController {
             return "Version: debug"
         }
         return "Version: \(version) (\(build))"
+    }
+
+    func updateCallingSDKService() {
+        #if XCUITest
+        let wrapper = CallingSDKEventsHandler.shared
+        print("-----------")
+        #endif
     }
 }
