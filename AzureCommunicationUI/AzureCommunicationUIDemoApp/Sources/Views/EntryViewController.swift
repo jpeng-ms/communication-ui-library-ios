@@ -7,6 +7,7 @@ import Foundation
 import UIKit
 import SwiftUI
 import CoreGraphics
+import AzureCommunicationUICalling
 
 class EntryViewController: UIViewController {
     private var envConfigSubject: EnvConfigSubject
