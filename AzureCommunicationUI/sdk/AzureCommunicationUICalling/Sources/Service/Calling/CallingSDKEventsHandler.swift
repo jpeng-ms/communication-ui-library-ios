@@ -3,20 +3,14 @@
 //  Licensed under the MIT License.
 //
 
-import Foundation
-import Combine
 import AzureCommunicationCalling
+import Combine
+import Foundation
 
 protocol CallingSDKEventsHandling: CallDelegate {
     func assign(_ recordingCallFeature: RecordingCallFeature)
     func assign(_ transcriptionCallFeature: TranscriptionCallFeature)
     func setupProperties()
-
-    var participantsInfoListSubject: CurrentValueSubject<[ParticipantInfoModel], Never> { get }
-    var callInfoSubject: PassthroughSubject<CallInfoModel, Never> { get }
-    var isRecordingActiveSubject: PassthroughSubject<Bool, Never> { get }
-    var isTranscriptionActiveSubject: PassthroughSubject<Bool, Never> { get }
-    var isLocalUserMutedSubject: PassthroughSubject<Bool, Never> { get }
 
     var participantsInfoList: AsyncStream<[ParticipantInfoModel]>! { get }
     var callInfo: AsyncStream<CallInfoModel>! { get }
@@ -152,6 +146,7 @@ class CallingSDKEventsHandler: NSObject, CallingSDKEventsHandling {
                 })
             }
         participantsInfoListSubject.send(remoteParticipantsInfoList)
+        participantInfoContinuation.yield(remoteParticipantsInfoList)
     }
 
     private func addRemoteParticipants(_ remoteParticipants: [RemoteParticipant]) {

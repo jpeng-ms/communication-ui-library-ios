@@ -4,14 +4,14 @@
 //
 
 import Foundation
-import Combine
 
 protocol CallingServiceProtocol {
-    var participantsInfoListSubject: CurrentValueSubject<[ParticipantInfoModel], Never> { get }
-    var callInfoSubject: PassthroughSubject<CallInfoModel, Never> { get }
-    var isRecordingActiveSubject: PassthroughSubject<Bool, Never> { get }
-    var isTranscriptionActiveSubject: PassthroughSubject<Bool, Never> { get }
-    var isLocalUserMutedSubject: PassthroughSubject<Bool, Never> { get }
+    var participantsInfoListStream: AsyncStream<[ParticipantInfoModel]> { get }
+    var callInfoStream: AsyncStream<CallInfoModel> { get }
+
+    var isRecordingActiveEvents: AsyncStream<Bool> { get }
+    var isTranscriptionActiveEvents: AsyncStream<Bool> { get }
+    var isLocalUserMutedEvents: AsyncStream<Bool> { get }
 
     func setupCall() async throws
     func startCall(isCameraPreferred: Bool, isAudioPreferred: Bool) async throws
@@ -34,22 +34,22 @@ class CallingService: NSObject, CallingServiceProtocol {
     private let logger: Logger
     private let callingSDKWrapper: CallingSDKWrapperProtocol
 
-    var isRecordingActiveSubject: PassthroughSubject<Bool, Never>
-    var isTranscriptionActiveSubject: PassthroughSubject<Bool, Never>
-
-    var isLocalUserMutedSubject: PassthroughSubject<Bool, Never>
-    var participantsInfoListSubject: CurrentValueSubject<[ParticipantInfoModel], Never>
-    var callInfoSubject: PassthroughSubject<CallInfoModel, Never>
+    var participantsInfoListStream: AsyncStream<[ParticipantInfoModel]>
+    var callInfoStream: AsyncStream<CallInfoModel>
+    var isRecordingActiveEvents: AsyncStream<Bool>
+    var isTranscriptionActiveEvents: AsyncStream<Bool>
+    var isLocalUserMutedEvents: AsyncStream<Bool>
 
     init(logger: Logger,
          callingSDKWrapper: CallingSDKWrapperProtocol ) {
         self.logger = logger
         self.callingSDKWrapper = callingSDKWrapper
-        isRecordingActiveSubject = callingSDKWrapper.callingEventsHandler.isRecordingActiveSubject
-        isTranscriptionActiveSubject = callingSDKWrapper.callingEventsHandler.isTranscriptionActiveSubject
-        isLocalUserMutedSubject = callingSDKWrapper.callingEventsHandler.isLocalUserMutedSubject
-        participantsInfoListSubject = callingSDKWrapper.callingEventsHandler.participantsInfoListSubject
-        callInfoSubject = callingSDKWrapper.callingEventsHandler.callInfoSubject
+
+        participantsInfoListStream = callingSDKWrapper.callingEventsHandler.participantsInfoList
+        callInfoStream = callingSDKWrapper.callingEventsHandler.callInfo
+        isRecordingActiveEvents = callingSDKWrapper.callingEventsHandler.isRecordingActive
+        isTranscriptionActiveEvents = callingSDKWrapper.callingEventsHandler.isTranscriptionActive
+        isLocalUserMutedEvents = callingSDKWrapper.callingEventsHandler.isLocalUserMuted
     }
 
     func setupCall() async throws {

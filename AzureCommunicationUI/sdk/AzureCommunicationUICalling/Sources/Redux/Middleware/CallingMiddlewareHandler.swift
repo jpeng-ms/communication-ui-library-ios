@@ -3,7 +3,6 @@
 //  Licensed under the MIT License.
 //
 
-import Combine
 import Foundation
 
 protocol CallingMiddlewareHandling {
@@ -27,8 +26,7 @@ protocol CallingMiddlewareHandling {
 class CallingMiddlewareHandler: CallingMiddlewareHandling {
     private let callingService: CallingServiceProtocol
     private let logger: Logger
-    private let cancelBag = CancelBag()
-    private let subscription = CancelBag()
+    private var subscriptionTasks = [Task<Void, Never>]()
 
     init(callingService: CallingServiceProtocol, logger: Logger) {
         self.callingService = callingService
@@ -222,57 +220,77 @@ class CallingMiddlewareHandler: CallingMiddlewareHandling {
 }
 
 extension CallingMiddlewareHandler {
+    private func cancelSubscriptions() {
+        for task in subscriptionTasks {
+            task.cancel()
+        }
+        subscriptionTasks.removeAll()
+    }
+
     private func subscription(dispatch: @escaping ActionDispatch) {
         logger.debug("Subscribe to calling service subjects")
-        callingService.participantsInfoListSubject
-            .throttle(for: 1.25, scheduler: DispatchQueue.main, latest: true)
-            .sink { list in
-                dispatch(.callingAction(.participantListUpdated(participants: list)))
-            }.store(in: subscription)
 
-        callingService.callInfoSubject
-            .sink { [weak self] callInfoModel in
-                guard let self = self else {
-                    return
+        subscriptionTasks.append(
+            Task {
+                for await participantinfo in callingService.participantsInfoListStream {
+                    dispatch(.callingAction(.participantListUpdated(participants: participantinfo)))
                 }
-                let internalError = callInfoModel.internalError
-                let callingStatus = callInfoModel.status
+            }
+        )
+//        callingService.participantsInfoListSubject
+//            .throttle(for: 1.25, scheduler: DispatchQueue.main, latest: true)
+//            .sink { list in
+//                dispatch(.callingAction(.participantListUpdated(participants: list)))
+//            }.store(in: subscription)
 
-                self.handle(callingStatus: callingStatus, dispatch: dispatch)
-                self.logger.debug("Dispatch State Update: \(callingStatus)")
+        subscriptionTasks.append(
+            Task { [unowned self] in
+                for await callInfoModel in callingService.callInfoStream {
+                    let internalError = callInfoModel.internalError
+                    let callingStatus = callInfoModel.status
 
-                if let internalError = internalError {
-                    self.handleCallInfo(internalError: internalError,
-                                        dispatch: dispatch) {
-                        self.logger.debug("Subscription cancelled with Error Code: \(internalError)")
-                        self.subscription.cancel()
+                    self.handle(callingStatus: callingStatus, dispatch: dispatch)
+                    self.logger.debug("Dispatch State Update: \(callingStatus)")
+
+                    if let internalError = internalError {
+                        self.handleCallInfo(internalError: internalError,
+                                            dispatch: dispatch) {
+                            self.logger.debug("Subscription cancelled with Error Code: \(internalError)")
+                            self.cancelSubscriptions()
+                        }
+                        // to fix the bug that resume call won't work without Internet
+                        // we exit the UI library when we receive the wrong status .remoteHold
+                    } else if callingStatus == .disconnected || callingStatus == .remoteHold {
+                        self.logger.debug("Subscription cancel happy path")
+                        dispatch(.compositeExitAction)
+                        self.cancelSubscriptions()
                     }
-                    // to fix the bug that resume call won't work without Internet
-                    // we exit the UI library when we receive the wrong status .remoteHold
-                } else if callingStatus == .disconnected || callingStatus == .remoteHold {
-                    self.logger.debug("Subscription cancel happy path")
-                    dispatch(.compositeExitAction)
-                    self.subscription.cancel()
                 }
+            }
+        )
 
-            }.store(in: subscription)
+        subscriptionTasks.append(
+            Task {
+                for await isRecordingActive in callingService.isRecordingActiveEvents {
+                    dispatch(.callingAction(.recordingStateUpdated(isRecordingActive: isRecordingActive)))
+                }
+            }
+        )
 
-        callingService.isRecordingActiveSubject
-            .removeDuplicates()
-            .sink { isRecordingActive in
-                dispatch(.callingAction(.recordingStateUpdated(isRecordingActive: isRecordingActive)))
-            }.store(in: subscription)
+        subscriptionTasks.append(
+            Task {
+                for await isTranscriptionActive in callingService.isTranscriptionActiveEvents {
+                    dispatch(.callingAction(.transcriptionStateUpdated(isTranscriptionActive: isTranscriptionActive)))
+                }
+            }
+        )
 
-        callingService.isTranscriptionActiveSubject
-            .removeDuplicates()
-            .sink { isTranscriptionActive in
-                dispatch(.callingAction(.transcriptionStateUpdated(isTranscriptionActive: isTranscriptionActive)))
-            }.store(in: subscription)
-
-        callingService.isLocalUserMutedSubject
-            .removeDuplicates()
-            .sink { isLocalUserMuted in
-                dispatch(.localUserAction(.microphoneMuteStateUpdated(isMuted: isLocalUserMuted)))
-            }.store(in: subscription)
+        subscriptionTasks.append(
+            Task {
+                for await isLocalUserMuted in callingService.isLocalUserMutedEvents {
+                    dispatch(.localUserAction(.microphoneMuteStateUpdated(isMuted: isLocalUserMuted)))
+                }
+            }
+        )
     }
 }
