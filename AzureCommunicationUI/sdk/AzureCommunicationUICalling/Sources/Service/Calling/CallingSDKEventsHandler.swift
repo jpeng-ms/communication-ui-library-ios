@@ -81,9 +81,12 @@ class CallingSDKEventsHandler: NSObject, CallingSDKEventsHandling {
     }
 
     private func setupAsyncStreams() {
-        participantsInfoList = AsyncStream { [unowned self] continuation in
-            self.participantInfoContinuation = continuation
-        }
+        participantsInfoList = AsyncStream(
+            [ParticipantInfoModel].self,
+            bufferingPolicy: .bufferingNewest(3), { continuation in
+                self.participantInfoContinuation = continuation
+            }
+        )
 
         callInfo = AsyncStream { [unowned self] continuation in
             self.callInfoContinuation = continuation
