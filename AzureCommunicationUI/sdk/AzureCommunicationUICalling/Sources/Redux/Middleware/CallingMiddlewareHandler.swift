@@ -142,7 +142,7 @@ class CallingMiddlewareHandler: CallingMiddlewareHandling {
         if state.permissionState.cameraPermission == .notAsked {
             dispatch(.permissionAction(.cameraPermissionRequested))
         } else {
-            Task { @MainActor in
+            Task {
                 do {
                     let streamId = try await callingService.startLocalVideoStream()
                     try await Task.sleep(nanoseconds: NSEC_PER_SEC)
