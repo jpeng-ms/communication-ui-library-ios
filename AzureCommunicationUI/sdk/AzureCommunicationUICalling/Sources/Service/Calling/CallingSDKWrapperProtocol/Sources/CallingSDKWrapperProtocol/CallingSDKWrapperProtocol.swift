@@ -3,16 +3,15 @@
 //  Licensed under the MIT License.
 //
 
-import Foundation
-import Combine
 import AzureCommunicationCalling
+import Foundation
 
-enum CameraDevice {
+public enum CameraDevice {
     case front
     case back
 }
 
-protocol CallingSDKWrapperProtocol {
+public protocol CallingSDKWrapperProtocol {
     func getRemoteParticipant(_ identifier: String) -> RemoteParticipant?
     func getLocalVideoStream(_ identifier: String) -> LocalVideoStream?
 
@@ -29,4 +28,12 @@ protocol CallingSDKWrapperProtocol {
     func resumeCall() async throws
 
     var callingEventsHandler: CallingSDKEventsHandling { get }
+}
+
+open class SDKWrapperBuilder {
+    public init() {}
+
+    open func build() -> CallingSDKWrapperProtocol {
+        fatalError("You must override this method in your implementation")
+    }
 }

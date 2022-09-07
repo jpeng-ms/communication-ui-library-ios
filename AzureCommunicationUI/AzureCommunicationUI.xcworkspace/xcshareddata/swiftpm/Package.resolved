@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "swiftpm-azurecommunicationcommon",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Azure/SwiftPM-AzureCommunicationCommon.git",
+      "state" : {
+        "revision" : "be6b15bd065739831de60259c7d67f61f707b2aa",
+        "version" : "1.0.3"
+      }
+    }
+  ],
+  "version" : 2
+}

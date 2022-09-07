@@ -3,6 +3,7 @@
 //  Licensed under the MIT License.
 //
 
+import CallingSDKWrapperProtocol
 import Foundation
 
 struct RemoteParticipantsState {

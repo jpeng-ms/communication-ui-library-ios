@@ -169,6 +169,7 @@ disabled_rules: # rule identifiers turned on by default to exclude from running
 
 excluded: # paths to ignore during linting. Takes precedence over `included`.
   - Pods
+  - Sources/Service/Calling/CallingSDKWrapperProtocol/Package.swift
 explicit_type_interface: # requires type annotation on everything but local variables and constants
   excluded:
     - local
@@ -179,6 +180,7 @@ file_header:
                     \/\/  Copyright \(c\) Microsoft Corporation\. All rights reserved\.
                     \/\/  Licensed under the MIT License\.
                     \/\/
+
 identifier_name:
   min_length: 1
   max_length: 60

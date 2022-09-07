@@ -3,8 +3,9 @@
 //  Licensed under the MIT License.
 //
 
-import Foundation
 import AzureCommunicationCalling
+import CallingSDKWrapperProtocol
+import Foundation
 
 extension CameraFacing {
     func toCameraDevice() -> CameraDevice {

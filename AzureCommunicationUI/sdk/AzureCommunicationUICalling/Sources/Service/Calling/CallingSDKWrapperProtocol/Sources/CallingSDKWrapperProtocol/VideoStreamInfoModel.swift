@@ -5,7 +5,7 @@
 
 import Foundation
 
-struct VideoStreamInfoModel: Hashable, Equatable {
+public struct VideoStreamInfoModel: Hashable, Equatable {
     enum MediaStreamType {
         case cameraVideo
         case screenSharing
