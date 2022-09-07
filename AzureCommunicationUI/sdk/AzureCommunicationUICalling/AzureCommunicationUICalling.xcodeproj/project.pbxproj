@@ -420,6 +420,7 @@
 		69FC33B2B556CC3B9164A78E /* Pods-AzureCommunicationUICalling.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AzureCommunicationUICalling.release.xcconfig"; path = "Target Support Files/Pods-AzureCommunicationUICalling/Pods-AzureCommunicationUICalling.release.xcconfig"; sourceTree = "<group>"; };
 		752B953B2863A40E001C52E8 /* Action.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Action.swift; sourceTree = "<group>"; };
 		75E43F1528C93F9A00AAFFDC /* CallingSDKWrapperProtocol */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = CallingSDKWrapperProtocol; path = Sources/Service/Calling/CallingSDKWrapperProtocol; sourceTree = "<group>"; };
+		75E43F1B28C9491F00AAFFDC /* AzureCommunicationCalling */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = AzureCommunicationCalling; path = ../../AzureCommunicationCalling; sourceTree = "<group>"; };
 		8815B6E127DA707B0065A184 /* LobbyOverlayViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LobbyOverlayViewModel.swift; sourceTree = "<group>"; };
 		8815B6E327DA9B350065A184 /* LobbyOverlayViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LobbyOverlayViewModelTests.swift; sourceTree = "<group>"; };
 		881D8F6F27F2327B008EC897 /* ErrorInfoViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorInfoViewModelTests.swift; sourceTree = "<group>"; };
@@ -984,6 +985,7 @@
 			isa = PBXGroup;
 			children = (
 				75E43F1528C93F9A00AAFFDC /* CallingSDKWrapperProtocol */,
+				75E43F1B28C9491F00AAFFDC /* AzureCommunicationCalling */,
 			);
 			name = Packages;
 			sourceTree = "<group>";
@@ -1318,8 +1320,8 @@
 			buildRules = (
 			);
 			dependencies = (
-				7514BF8028C91EC300035A72 /* PBXTargetDependency */,
 				7514BF7A28C9027E00035A72 /* PBXTargetDependency */,
+				7514BF8028C91EC300035A72 /* PBXTargetDependency */,
 			);
 			name = AzureCommunicationUICalling;
 			packageProductDependencies = (

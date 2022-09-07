@@ -11,8 +11,7 @@ let package = Package(
             name: "CallingSDKWrapperProtocol",
             type: .dynamic,
             targets: [
-                "CallingSDKWrapperProtocol",
-                "AzureCommunicationCalling"
+                "CallingSDKWrapperProtocol"
             ]
         )
     ],
@@ -21,13 +20,9 @@ let package = Package(
             url: "https://github.com/Azure/SwiftPM-AzureCommunicationCommon.git",
             exact: .init(1, 0, 3)
         ),
+        .package(path: "../AzureCommunicationCalling")
     ],
     targets: [
-        .binaryTarget(
-            name: "AzureCommunicationCalling",
-            url: "https://github.com/Azure/Communication/releases/download/v2.4.0-alpha.1/AzureCommunicationCalling-2.4.0-alpha.1.zip",
-            checksum: "2cfdf393e77869122f0d15d02938c3de9356ee59310eda580d81829259db6d17"
-        ),
         .target(
             name: "CallingSDKWrapperProtocol",
             dependencies: [
@@ -44,11 +39,6 @@ let package = Package(
 //                ])
 //            ]
         ),
-//        .binaryTarget(
-//            name: "AzureCommunicationCalling",
-//            url: "https://github.com/Azure/Communication/releases/download/v2.2.0/AzureCommunicationCalling-2.2.0.zip",
-//            checksum: "82af7eddc193c22e729373b713b1328efbf784c0cecb83b3e217996c9547f298"
-//        ),
         .testTarget(
             name: "CallingSDKWrapperProtocolTests",
             dependencies: ["CallingSDKWrapperProtocol"])
