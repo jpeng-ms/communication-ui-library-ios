@@ -19,17 +19,23 @@ class IconWithLabelButtonViewModel: ObservableObject {
     @Published var accessibilityValue: String?
     @Published var accessibilityHint: String?
     @Published var isDisabled: Bool
+
+    @Published public var isFocused: Bool
     var action: (() -> Void)
+
+    var priority: Double = 0
 
     init(iconName: CompositeIcon,
          buttonTypeColor: ButtonTypeColor,
          buttonLabel: String,
          isDisabled: Bool = false,
+         isFocused: Bool = true,
          action: @escaping (() -> Void) = {}) {
         self.iconName = iconName
         self.buttonTypeColor = buttonTypeColor
         self.buttonLabel = buttonLabel
         self.isDisabled = isDisabled
+        self.isFocused = isFocused
         self.action = action
     }
 

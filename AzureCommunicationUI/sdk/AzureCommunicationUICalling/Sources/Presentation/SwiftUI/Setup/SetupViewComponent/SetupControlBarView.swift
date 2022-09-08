@@ -14,6 +14,9 @@ struct SetupControlBarView: View {
     let horizontalPadding: CGFloat = 16
     let verticalPadding: CGFloat = 13
 
+    @available(iOS 15.0, *)
+    @AccessibilityFocusState var focusArea: Bool
+
     var body: some View {
         GeometryReader { geometry in
             VStack(alignment: .center) {
@@ -24,7 +27,14 @@ struct SetupControlBarView: View {
                     Spacer()
                     micButton
                     Spacer()
-                    audioDeviceButton
+                    Group {
+                        if #available(iOS 15.0, *) {
+                            audioDeviceButton
+                                .accessibilityFocused($focusArea)
+                        } else {
+                            audioDeviceButton
+                        }
+                    }
                     Spacer()
                 }
                 .frame(width: getWidth(from: geometry),
@@ -35,30 +45,39 @@ struct SetupControlBarView: View {
             }
         }
         .modifier(PopupModalView(isPresented: viewModel.isAudioDeviceSelectionDisplayed) {
-            audioDeviceSelectionListView
+            audioDeviceSelectionListView.onDisappear(perform: {
+                if #available(iOS 15.0, *) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
+                        print(focusArea)
+                        focusArea = true
+                        print(focusArea)
+                    })
+                }
+            })
         })
     }
 
     var cameraButton: some View {
-        IconWithLabelButton(viewModel: viewModel.cameraButtonViewModel)
+        IconWithLabelButton(viewModel: viewModel.cameraButtonViewModel,
+                            isDrawerClosed: $viewModel.isAudioDeviceSelectionDisplayed)
             .accessibility(identifier: AccessibilityIdentifier.toggleVideoAccessibilityID.rawValue)
     }
 
     var micButton: some View {
-        IconWithLabelButton(viewModel: viewModel.micButtonViewModel)
+        IconWithLabelButton(viewModel: viewModel.micButtonViewModel,
+                            isDrawerClosed: $viewModel.isAudioDeviceSelectionDisplayed)
             .accessibility(identifier: AccessibilityIdentifier.togglMicAccessibilityID.rawValue)
     }
 
     var audioDeviceButton: some View {
-        IconWithLabelButton(viewModel: viewModel.audioDeviceButtonViewModel)
-            .background(SourceViewSpace(sourceView: audioDeviceButtonSourceView))
-            .accessibility(identifier: AccessibilityIdentifier.toggleAudioDeviceAccesibiiltyID.rawValue)
+        IconWithLabelButton(viewModel: viewModel.audioDeviceButtonViewModel,
+                            isDrawerClosed: $viewModel.isAudioDeviceSelectionDisplayed)
     }
 
     var audioDeviceSelectionListView: some View {
         CompositeAudioDevicesList(isPresented: $viewModel.isAudioDeviceSelectionDisplayed,
                                   viewModel: viewModel.audioDevicesListViewModel,
-                                  sourceView: audioDeviceButtonSourceView)
+                                  sourceView: UIHostingController(rootView: cameraButton).view)
     }
 
     private func getWidth(from geometry: GeometryProxy) -> CGFloat {

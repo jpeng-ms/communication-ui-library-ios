@@ -5,6 +5,7 @@
 
 import Foundation
 import Combine
+import SwiftUI
 
 class ControlBarViewModel: ObservableObject {
     private let logger: Logger
@@ -16,6 +17,10 @@ class ControlBarViewModel: ObservableObject {
     @Published var cameraPermission: AppPermission.Status = .unknown
     @Published var isAudioDeviceSelectionDisplayed: Bool = false
     @Published var isConfirmLeaveListDisplayed: Bool = false
+
+    @available(iOS 15.0, *)
+    @AccessibilityFocusState
+    var isEndCallButtonFocused: Bool
 
     let audioDevicesListViewModel: AudioDevicesListViewModel
 
@@ -78,7 +83,7 @@ class ControlBarViewModel: ObservableObject {
                 guard let self = self else {
                     return
                 }
-                self.logger.debug("Select audio device button tapped")
+                self.logger.debug("Select audio device button tapped z")
                 self.selectAudioDeviceButtonTapped()
         }
         audioDeviceButtonViewModel.accessibilityLabel = self.localizationProvider.getLocalizedString(
@@ -125,6 +130,9 @@ class ControlBarViewModel: ObservableObject {
 
     func dismissConfirmLeaveDrawerList() {
         self.isConfirmLeaveListDisplayed = false
+        if #available(iOS 15.0, *) {
+            isEndCallButtonFocused = true
+        }
     }
 
     func isCameraDisabled() -> Bool {

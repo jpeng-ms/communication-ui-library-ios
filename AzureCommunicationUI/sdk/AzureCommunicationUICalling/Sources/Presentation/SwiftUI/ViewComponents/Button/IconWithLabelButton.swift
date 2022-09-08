@@ -11,6 +11,13 @@ struct IconWithLabelButton: View {
 
     @ObservedObject var viewModel: IconWithLabelButtonViewModel
 
+    @Binding var isDrawerClosed: Bool
+    @available(iOS 15.0, *)
+    @AccessibilityFocusState var isFocused: Bool
+
+    @available(iOS 15.0, *)
+    @AccessibilityFocusState var isFocused2: Bool
+
     private let iconImageSize: CGFloat = 25
     private let verticalSpacing: CGFloat = 8
     private let width: CGFloat = 85
@@ -27,27 +34,52 @@ struct IconWithLabelButton: View {
     }
 
     var body: some View {
-        Button(action: viewModel.action) {
-            VStack(alignment: .center, spacing: verticalSpacing) {
-                Icon(name: viewModel.iconName, size: iconImageSize)
-                    .accessibilityHidden(true)
-                if let buttonLabel = viewModel.buttonLabel {
-                    if sizeCategory >= ContentSizeCategory.accessibilityMedium {
-                        Text(buttonLabel)
-                            .font(Fonts.button2Accessibility.font)
-                    } else {
-                        Text(buttonLabel)
-                            .font(Fonts.button2.font)
+        if #available(iOS 15.0, *) {
+            Button(action: viewModel.action) {
+                VStack(alignment: .center, spacing: verticalSpacing) {
+                    Icon(name: viewModel.iconName, size: iconImageSize)
+                        .accessibilityHidden(true)
+                    if let buttonLabel = viewModel.buttonLabel {
+                        if sizeCategory >= ContentSizeCategory.accessibilityMedium {
+                            Text(buttonLabel)
+                                .font(Fonts.button2Accessibility.font)
+                        } else {
+                            Text(buttonLabel)
+                                .font(Fonts.button2.font)
+                        }
                     }
                 }
             }
+            .animation(nil)
+            .disabled(viewModel.isDisabled)
+            .foregroundColor(viewModel.isDisabled ? buttonDisabledColor : buttonForegroundColor)
+            .frame(width: width, height: height, alignment: .top)
+            .accessibilityLabel(Text(viewModel.accessibilityLabel ?? ""))
+            .accessibilityValue(Text(viewModel.accessibilityValue ?? ""))
+            .accessibilityHint(Text(viewModel.accessibilityHint ?? ""))
+        } else {
+            Button(action: viewModel.action) {
+                VStack(alignment: .center, spacing: verticalSpacing) {
+                    Icon(name: viewModel.iconName, size: iconImageSize)
+                        .accessibilityHidden(true)
+                    if let buttonLabel = viewModel.buttonLabel {
+                        if sizeCategory >= ContentSizeCategory.accessibilityMedium {
+                            Text(buttonLabel)
+                                .font(Fonts.button2Accessibility.font)
+                        } else {
+                            Text(buttonLabel)
+                                .font(Fonts.button2.font)
+                        }
+                    }
+                }
+            }
+            .animation(nil)
+            .disabled(viewModel.isDisabled)
+            .foregroundColor(viewModel.isDisabled ? buttonDisabledColor : buttonForegroundColor)
+            .frame(width: width, height: height, alignment: .top)
+            .accessibilityLabel(Text(viewModel.accessibilityLabel ?? ""))
+            .accessibilityValue(Text(viewModel.accessibilityValue ?? ""))
+            .accessibilityHint(Text(viewModel.accessibilityHint ?? ""))
         }
-        .animation(nil)
-        .disabled(viewModel.isDisabled)
-        .foregroundColor(viewModel.isDisabled ? buttonDisabledColor : buttonForegroundColor)
-        .frame(width: width, height: height, alignment: .top)
-        .accessibilityLabel(Text(viewModel.accessibilityLabel ?? ""))
-        .accessibilityValue(Text(viewModel.accessibilityValue ?? ""))
-        .accessibilityHint(Text(viewModel.accessibilityHint ?? ""))
     }
 }

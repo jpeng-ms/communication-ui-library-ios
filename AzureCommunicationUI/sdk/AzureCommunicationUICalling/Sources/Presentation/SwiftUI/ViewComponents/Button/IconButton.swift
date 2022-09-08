@@ -6,6 +6,8 @@
 import SwiftUI
 
 struct IconButton: View {
+    @available(iOS 15.0, *)
+    @AccessibilityFocusState var isFocused: Bool
     @ObservedObject var viewModel: IconButtonViewModel
 
     private let buttonDisabledColor = Color(StyleProvider.color.disableColor)
@@ -111,28 +113,52 @@ struct IconButton: View {
     }
 
     var body: some View {
-        Group {
-            Button(action: viewModel.action) {
-                Icon(name: viewModel.iconName, size: iconImageSize)
-                    .contentShape(Rectangle())
+        if #available(iOS 15.0, *) {
+            Group {
+                Button(action: viewModel.action) {
+                    Icon(name: viewModel.iconName, size: iconImageSize)
+                        .contentShape(Rectangle())
+                }
+                .disabled(viewModel.isDisabled)
+                .foregroundColor(viewModel.isDisabled ? buttonDisabledColor : buttonForegroundColor)
+                .frame(width: width, height: height, alignment: .center)
+                .background(buttonBackgroundColor)
+                .clipShape(RoundedCornersShape(radius: shapeCornerRadius, corners: roundedCorners))
+                .accessibilityLabel(Text(viewModel.accessibilityLabel ?? ""))
+                .accessibilityValue(Text(viewModel.accessibilityValue ?? ""))
+                .accessibilityHint(Text(viewModel.accessibilityHint ?? ""))
             }
-            .disabled(viewModel.isDisabled)
-            .foregroundColor(viewModel.isDisabled ? buttonDisabledColor : buttonForegroundColor)
-            .frame(width: width, height: height, alignment: .center)
-            .background(buttonBackgroundColor)
-            .clipShape(RoundedCornersShape(radius: shapeCornerRadius, corners: roundedCorners))
-            .accessibilityLabel(Text(viewModel.accessibilityLabel ?? ""))
-            .accessibilityValue(Text(viewModel.accessibilityValue ?? ""))
-            .accessibilityHint(Text(viewModel.accessibilityHint ?? ""))
+            .frame(width: tappableWidth,
+                   height: tappableHeight,
+                   alignment: .center)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                viewModel.action()
+            }.accessibilityFocused($isFocused)
+                .disabled(viewModel.isDisabled)
+        } else {
+            Group {
+                Button(action: viewModel.action) {
+                    Icon(name: viewModel.iconName, size: iconImageSize)
+                        .contentShape(Rectangle())
+                }
+                .disabled(viewModel.isDisabled)
+                .foregroundColor(viewModel.isDisabled ? buttonDisabledColor : buttonForegroundColor)
+                .frame(width: width, height: height, alignment: .center)
+                .background(buttonBackgroundColor)
+                .clipShape(RoundedCornersShape(radius: shapeCornerRadius, corners: roundedCorners))
+                .accessibilityLabel(Text(viewModel.accessibilityLabel ?? ""))
+                .accessibilityValue(Text(viewModel.accessibilityValue ?? ""))
+                .accessibilityHint(Text(viewModel.accessibilityHint ?? ""))
+            }
+            .frame(width: tappableWidth,
+                   height: tappableHeight,
+                   alignment: .center)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                viewModel.action()
+            }
         }
-        .frame(width: tappableWidth,
-               height: tappableHeight,
-               alignment: .center)
-        .contentShape(Rectangle())
-        .onTapGesture {
-            viewModel.action()
-        }
-        .disabled(viewModel.isDisabled)
     }
 }
 

@@ -34,6 +34,7 @@ struct SetupView: View {
                                                 viewManager: viewManager,
                                                 avatarManager: avatarManager)
                                 SetupControlBarView(viewModel: viewModel.setupControlBarViewModel)
+                                    .accessibilityElement(children: .contain)
                             }
                             .background(Color(StyleProvider.color.surface))
                             .cornerRadius(4)
