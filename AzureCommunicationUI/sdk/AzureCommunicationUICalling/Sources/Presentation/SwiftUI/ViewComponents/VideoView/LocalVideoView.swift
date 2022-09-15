@@ -112,6 +112,8 @@ struct LocalVideoView: View {
             }
         }.onReceive(avatarManager.$localOptions) {
             avatarImage = $0?.participantViewData?.avatarImage
+        }.onAppear {
+            print("local video view created")
         }
     }
 

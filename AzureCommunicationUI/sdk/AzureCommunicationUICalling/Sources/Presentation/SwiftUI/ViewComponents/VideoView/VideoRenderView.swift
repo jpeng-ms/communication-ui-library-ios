@@ -24,6 +24,7 @@ class VideoRendererUIView: UIView {
 
     init(rendererView: UIView) {
         super.init(frame: .zero)
+        print("rendererView created")
         update(rendererView: rendererView)
     }
 

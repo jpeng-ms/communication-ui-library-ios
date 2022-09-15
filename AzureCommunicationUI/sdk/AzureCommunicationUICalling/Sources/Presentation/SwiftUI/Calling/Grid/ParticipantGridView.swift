@@ -24,6 +24,8 @@ struct ParticipantGridView: View {
             }
             .onReceive(viewModel.$displayedParticipantInfoModelArr) {
                 updateVideoViewManager(displayedRemoteInfoModelArr: $0)
+            }.onAppear {
+                print("grid view created")
             }
     }
 

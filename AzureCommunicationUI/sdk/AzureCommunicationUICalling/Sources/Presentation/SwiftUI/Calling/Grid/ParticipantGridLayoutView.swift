@@ -33,6 +33,8 @@ struct ParticipantGridLayoutView: View {
                     hGridLayout
                 }
             }
+        }.onAppear {
+            print("grid layout view created")
         }
     }
 

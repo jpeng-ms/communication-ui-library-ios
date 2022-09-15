@@ -43,6 +43,9 @@ struct ParticipantGridCellVideoView: View {
             isSpeaking && !isMuted ? RoundedRectangle(cornerRadius: 4)
                 .strokeBorder(Color(StyleProvider.color.primaryColor), lineWidth: 4) : nil
         ).animation(.default)
+        .onAppear {
+            print("ParticipantGridCell created")
+        }
     }
 
     var videoRenderView: some View {
