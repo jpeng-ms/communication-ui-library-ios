@@ -137,6 +137,7 @@
 		50FA461D2698DCEC001844AC /* IconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50FA461C2698DCEB001844AC /* IconButton.swift */; };
 		50FA46212698EA7A001844AC /* IconWithLabelButtonViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50FA46202698EA7A001844AC /* IconWithLabelButtonViewModel.swift */; };
 		50FA4623269CA1D4001844AC /* IconButtonViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50FA4622269CA1D3001844AC /* IconButtonViewModel.swift */; };
+		526559FA28E403CA007E1A97 /* VideoBackgroundProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526559F928E403CA007E1A97 /* VideoBackgroundProcessor.swift */; };
 		529C34E328A4B25400ACD918 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529C34E228A4B25400ACD918 /* NetworkManager.swift */; };
 		5A314059D7E61D1083A8C473 /* LocalVideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A314A985811198B09DA2688 /* LocalVideoView.swift */; };
 		5A3140EA80ACDCB14140A060 /* CompositeViewFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A3145FC912A71B20D5ECBF6 /* CompositeViewFactory.swift */; };
@@ -414,6 +415,7 @@
 		50FA461C2698DCEB001844AC /* IconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconButton.swift; sourceTree = "<group>"; };
 		50FA46202698EA7A001844AC /* IconWithLabelButtonViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconWithLabelButtonViewModel.swift; sourceTree = "<group>"; };
 		50FA4622269CA1D3001844AC /* IconButtonViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconButtonViewModel.swift; sourceTree = "<group>"; };
+		526559F928E403CA007E1A97 /* VideoBackgroundProcessor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoBackgroundProcessor.swift; sourceTree = "<group>"; };
 		529C34E228A4B25400ACD918 /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
 		5A3141390FEFB58AD2A2E22F /* LocalVideoViewModelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalVideoViewModelTests.swift; sourceTree = "<group>"; };
 		5A314317E4A1B700E6BE5E2E /* LocalVideoViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalVideoViewModel.swift; sourceTree = "<group>"; };
@@ -577,6 +579,7 @@
 		1F04A64F273491620028AAC8 /* VideoView */ = {
 			isa = PBXGroup;
 			children = (
+				526559F928E403CA007E1A97 /* VideoBackgroundProcessor.swift */,
 				5A314317E4A1B700E6BE5E2E /* LocalVideoViewModel.swift */,
 				5A314A985811198B09DA2688 /* LocalVideoView.swift */,
 				1FBCB6A92645AC2F00F57EEA /* VideoRenderView.swift */,
@@ -1641,6 +1644,7 @@
 				88701EB8274C29C600660EAB /* CallingMiddlewareHandlerExtension.swift in Sources */,
 				1B5F169F27FBB70700C35126 /* LeaveCallConfirmationListViewController.swift in Sources */,
 				1F2BED992631FA6C00D98266 /* PermissionState.swift in Sources */,
+				526559FA28E403CA007E1A97 /* VideoBackgroundProcessor.swift in Sources */,
 				1F94DADF2673E94F00691D1E /* CallComposite.swift in Sources */,
 				1B70D52827191073007CC933 /* DeviceExtension.swift in Sources */,
 				FA94AF3F27D68DFD001063A6 /* AccessibilityProvider.swift in Sources */,

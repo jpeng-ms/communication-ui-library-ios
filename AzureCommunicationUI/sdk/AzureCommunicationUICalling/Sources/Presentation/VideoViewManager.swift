@@ -326,4 +326,3 @@ extension VideoViewManager: MTKViewDelegate {
 
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {}
 }
-
