@@ -80,14 +80,14 @@ class VideoBackgroundProcessor {
     }
 
     func processVideoFrame( foreground: CVPixelBuffer,
-                            background: CGImage) -> CIImage? {
+                            background: CIImage) -> CIImage? {
             // Create request handler
         let ciForeground = CIImage(cvPixelBuffer: foreground)
         let personSegmentFilter = CIFilter.personSegmentation()
         personSegmentFilter.inputImage = ciForeground
         if let mask = personSegmentFilter.outputImage {
             guard let output = blendImages(
-                background: CIImage(cgImage: background),
+                background: background,
                 foreground: ciForeground,
                 mask: mask,
                 isRedMask: true) else {

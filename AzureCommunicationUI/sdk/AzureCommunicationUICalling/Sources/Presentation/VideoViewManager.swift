@@ -282,21 +282,38 @@ extension VideoViewManager: AVCaptureVideoDataOutputSampleBufferDelegate {
                        didOutput sampleBuffer: CMSampleBuffer,
                        from connection: AVCaptureConnection) {
       // Grab the pixelbuffer frame from the camera output
-      guard let pixelBuffer = sampleBuffer.imageBuffer,
-        let backgroundImage = self.background?.cgImage else {
+      guard let pixelBuffer = sampleBuffer.imageBuffer else {
         return
       }
+
+      let foreground = CIImage(cvPixelBuffer: pixelBuffer)
+      let backgroundImg = blurredImage(with: foreground)
       DispatchQueue.global().async {
           if #available(iOS 15.0, *) {
               if let output = VideoBackgroundProcessor.shared.processVideoFrame(
                 foreground: pixelBuffer,
-                background: backgroundImage) {
+                background: backgroundImg) {
                   DispatchQueue.main.async {
                       self.currentCIImage = output
                   }
               }
           }
       }
+    }
+    func blurredImage(with inputImage: CIImage) -> CIImage {
+        let context = CIContext(options: nil)
+        //  Setting up Gaussian Blur
+        let filter = CIFilter(name: "CIGaussianBlur")
+        filter?.setValue(inputImage, forKey: kCIInputImageKey)
+        filter?.setValue(50.0, forKey: "inputRadius")
+        let result = filter?.value(forKey: kCIOutputImageKey) as? CIImage
+
+       /*  CIGaussianBlur has a tendency to shrink the image a little, this ensures it matches
+        *  up exactly to the bounds of our original image */
+
+        let cgImage = context.createCGImage(result ?? CIImage(), from: inputImage.extent)
+        let retVal = CIImage(cgImage: cgImage!)
+        return retVal
     }
   }
 
