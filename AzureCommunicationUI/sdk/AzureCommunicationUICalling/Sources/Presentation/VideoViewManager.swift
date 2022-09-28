@@ -222,7 +222,7 @@ extension VideoViewManager {
         // https://unsplash.com/photos/rRiAzFkJPMo
         // https://unsplash.com/photos/wawEfYdpkag
         // Image Authors: Yann Maignan, Austin Distel
-        background = UIImage(named: "austin-distel-wawEfYdpkag-unsplash",
+        background = UIImage(named: "yann-maignan-rRiAzFkJPMo-unsplash",
                              in: Bundle(for: CallComposite.self),
                              compatibleWith: nil)
         let baseView = UIView()
