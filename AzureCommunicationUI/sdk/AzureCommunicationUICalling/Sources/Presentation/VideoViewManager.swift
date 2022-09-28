@@ -5,6 +5,8 @@
 
 import Foundation
 import AzureCommunicationCalling
+import AVFoundation
+import MetalKit
 
 struct RemoteParticipantVideoViewId {
     let userIdentifier: String
@@ -38,6 +40,20 @@ class VideoViewManager: NSObject, RendererDelegate, RendererViewManager {
 
     private let callingSDKWrapper: CallingSDKWrapperProtocol
 
+    let session = AVCaptureSession()
+    var prevLayer: AVCaptureVideoPreviewLayer?
+    var videoOutput = AVCaptureVideoDataOutput()
+    let cameraView = MTKView()
+    var metalDevice: MTLDevice?
+    var metalCommandQueue: MTLCommandQueue?
+    var ciContext: CIContext?
+    var background: UIImage?
+    var currentCIImage: CIImage? {
+      didSet {
+        cameraView.draw()
+      }
+    }
+
     init(callingSDKWrapper: CallingSDKWrapperProtocol,
          logger: Logger) {
         self.callingSDKWrapper = callingSDKWrapper
@@ -61,6 +77,11 @@ class VideoViewManager: NSObject, RendererDelegate, RendererViewManager {
     }
 
     func updateDisplayedLocalVideoStream(_ identifier: String?) {
+        if identifier == nil {
+            DispatchQueue(label: "video").async {
+                self.session.stopRunning()
+            }
+        }
         localRendererViews.makeKeyIterator().forEach { [weak self] key in
             if identifier != key {
                 self?.disposeLocalVideoRendererCache(key)
@@ -69,6 +90,7 @@ class VideoViewManager: NSObject, RendererDelegate, RendererViewManager {
     }
 
     func getLocalVideoRendererView(_ videoStreamId: String) -> UIView? {
+        return getLocalVideoNativeSteam()
         if let localRenderCache = localRendererViews.value(forKey: videoStreamId) {
             return localRenderCache.rendererView
         }
@@ -81,7 +103,6 @@ class VideoViewManager: NSObject, RendererDelegate, RendererViewManager {
             let newRenderer: VideoStreamRenderer = try VideoStreamRenderer(localVideoStream: videoStream)
             let newRendererView: RendererView = try newRenderer.createView(
                 withOptions: CreateViewOptions(scalingMode: .crop))
-
             let cache = VideoStreamCache(renderer: newRenderer,
                                          rendererView: newRendererView,
                                          mediaStreamType: videoStream.mediaStreamType)
@@ -190,3 +211,119 @@ class VideoViewManager: NSObject, RendererDelegate, RendererViewManager {
         logger.error("Failed to render remote screenshare video. \(renderer)")
     }
 }
+
+// MARK: virtual background spike
+// Reference: https://www.raywenderlich.com/29650263-person-segmentation-in-the-vision-framework#toc-anchor-007
+extension VideoViewManager {
+    func getLocalVideoNativeSteam() -> UIView? {
+        setupMetal()
+        setupCoreImage()
+        // Free to use under the Unsplash License
+        // https://unsplash.com/photos/rRiAzFkJPMo
+        // https://unsplash.com/photos/wawEfYdpkag
+        // Image Authors: Yann Maignan, Austin Distel
+        background = UIImage(named: "austin-distel-wawEfYdpkag-unsplash",
+                             in: Bundle(for: CallComposite.self),
+                             compatibleWith: nil)
+        let baseView = UIView()
+        baseView.frame = CGRect(x: 0, y: 0, width: 500, height: 800)
+        guard let device = AVCaptureDevice.default(.builtInWideAngleCamera,
+                                                   for: .video,
+                                                   position: .front) else {
+            return baseView
+        }
+        guard let input = try? AVCaptureDeviceInput(device: device) else {
+            return baseView
+        }
+        session.addInput(input)
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized:
+            session.beginConfiguration()
+            videoOutput.setSampleBufferDelegate(self, queue: .main)
+            videoOutput.alwaysDiscardsLateVideoFrames = true
+            session.addOutput(self.videoOutput)
+            videoOutput.connections.first?.videoOrientation = .portrait
+            videoOutput.connections.first?.isVideoMirrored = true
+            session.commitConfiguration()
+        default:
+           break
+       }
+        baseView.addSubview(cameraView)
+        DispatchQueue(label: "video").async {
+            self.session.startRunning()
+        }
+        return baseView
+    }
+
+    func setupMetal() {
+        metalDevice = MTLCreateSystemDefaultDevice()
+        guard let device = metalDevice else {
+            return
+        }
+        metalCommandQueue = device.makeCommandQueue()
+        cameraView.frame = CGRect(x: 0, y: 0, width: 500, height: 800)
+        cameraView.device = device
+        cameraView.isPaused = true
+        cameraView.enableSetNeedsDisplay = false
+        cameraView.delegate = self
+        cameraView.framebufferOnly = false
+    }
+
+    func setupCoreImage() {
+        guard let device = metalDevice else {
+          return
+        }
+        ciContext = CIContext(mtlDevice: device)
+    }
+}
+
+extension VideoViewManager: AVCaptureVideoDataOutputSampleBufferDelegate {
+    func captureOutput(_ output: AVCaptureOutput,
+                       didOutput sampleBuffer: CMSampleBuffer,
+                       from connection: AVCaptureConnection) {
+      // Grab the pixelbuffer frame from the camera output
+      guard let pixelBuffer = sampleBuffer.imageBuffer,
+        let backgroundImage = self.background?.cgImage else {
+        return
+      }
+      DispatchQueue.global().async {
+          if #available(iOS 15.0, *) {
+              if let output = VideoBackgroundProcessor.shared.processVideoFrame(
+                foreground: pixelBuffer,
+                background: backgroundImage) {
+                  DispatchQueue.main.async {
+                      self.currentCIImage = output
+                  }
+              }
+          }
+      }
+    }
+  }
+
+extension VideoViewManager: MTKViewDelegate {
+    func draw(in view: MTKView) {
+      guard let commandBuffer = metalCommandQueue?.makeCommandBuffer(),
+        let ciImage = currentCIImage,
+        let currentDrawable = view.currentDrawable else {
+        return
+      }
+
+      let drawSize = cameraView.drawableSize
+      let scaleX = drawSize.width / ciImage.extent.width
+      let scaleY = drawSize.height / ciImage.extent.height
+
+      let newImage = ciImage.transformed(by: .init(scaleX: scaleX, y: scaleY))
+      // render into the metal texture
+      self.ciContext?.render( newImage,
+                              to: currentDrawable.texture,
+                              commandBuffer: commandBuffer,
+                              bounds: newImage.extent,
+                              colorSpace: CGColorSpaceCreateDeviceRGB())
+      // register drawable to command buffer
+      commandBuffer.present(currentDrawable)
+      commandBuffer.commit()
+    }
+
+    func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {}
+}
+
