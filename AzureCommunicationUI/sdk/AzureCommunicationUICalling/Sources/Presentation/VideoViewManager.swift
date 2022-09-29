@@ -213,7 +213,14 @@ class VideoViewManager: NSObject, RendererDelegate, RendererViewManager {
 }
 
 // MARK: virtual background spike
-// Reference: https://www.raywenderlich.com/29650263-person-segmentation-in-the-vision-framework#toc-anchor-007
+// Reference:
+/*
+-   https://developer.apple.com/documentation/avfoundation/additional_data_capture/
+    avcamfilter_applying_filters_to_a_capture_stream#/apple_ref/doc/uid/TP40017556
+-   https://www.willowtreeapps.com/craft/how-to-apply-a-filter-to-a-video-stream-in-ios
+-   https://rockyshikoku.medium.com/people-cut-out-on-ios-virtual-background-background-blur-composite-76ac981ee56c
+-   https://www.raywenderlich.com/29650263-person-segmentation-in-the-vision-framework#toc-anchor-007
+*/
 extension VideoViewManager {
     func getLocalVideoNativeSteam() -> UIView? {
         setupMetal()
