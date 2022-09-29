@@ -41,7 +41,6 @@ class VideoViewManager: NSObject, RendererDelegate, RendererViewManager {
     private let callingSDKWrapper: CallingSDKWrapperProtocol
 
     let session = AVCaptureSession()
-    var prevLayer: AVCaptureVideoPreviewLayer?
     var videoOutput = AVCaptureVideoDataOutput()
     let cameraView = MTKView()
     var metalDevice: MTLDevice?
@@ -233,7 +232,7 @@ extension VideoViewManager {
                              in: Bundle(for: CallComposite.self),
                              compatibleWith: nil)
         let baseView = UIView()
-        baseView.frame = CGRect(x: 0, y: 0, width: 500, height: 800)
+        baseView.frame = CGRect(x: 0, y: 0, width: 500, height: 900)
         guard let device = AVCaptureDevice.default(.builtInWideAngleCamera,
                                                    for: .video,
                                                    position: .front) else {
@@ -268,7 +267,7 @@ extension VideoViewManager {
             return
         }
         metalCommandQueue = device.makeCommandQueue()
-        cameraView.frame = CGRect(x: 0, y: 0, width: 500, height: 800)
+        cameraView.frame = CGRect(x: 0, y: 0, width: 500, height: 900)
         cameraView.device = device
         cameraView.isPaused = true
         cameraView.enableSetNeedsDisplay = false
